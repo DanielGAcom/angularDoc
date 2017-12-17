@@ -1,6 +1,6 @@
 var PlunkerBuilder = require('./builder');
 
-function buildPlunkers(basePath, destPath, options) {
+function buildPlunkers(basePath, destPath, options = {}) {
   configureBuilder(options);
   var builder = new PlunkerBuilder(basePath, destPath, options);
   builder.buildPlunkers();

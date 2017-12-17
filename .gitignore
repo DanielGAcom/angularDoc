@@ -1,37 +1,48 @@
-node_modules
-_temp
-bower_components
-jspm_packages
-**/packages
-build
-pubspec.lock
-.pub
-.packages
-*.map
-.DS_Store
-**/*.iml
-.idea
-.vscode
-**/js/latest/api
-**/ts/latest/api
-**/dart/latest/api
-**/docs/**/_fragments
-_.*
-**/resources/zips
-public/docs/xref-*.*
-_zip-output
-www*
-npm-debug*.log*
-**/debug.log
-*.plnkr.html
-plnkr.html
-*.eplnkr.html
-eplnkr.html
-*plnkr.no-link.html
-public/docs/*/latest/guide/cheatsheet.json
-protractor-results.txt
-link-checker-results.txt
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
 /dist
-/public/docs/dart
-/public/docs/ts/_cache
-/public/docs/_examples/*/dart
+/out-tsc
+/src/generated
+/tmp
+
+# dependencies
+/node_modules
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+testem.log
+/typings
+yarn-error.log
+
+# e2e
+/e2e/*.js
+/e2e/*.map
+protractor-results*.txt
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# copied dependencies
+src/assets/js/lunr*

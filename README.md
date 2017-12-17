@@ -1,167 +1,126 @@
-# This angular.io documentation repository is closed and preserved just for archival purposes
+# Angular documentation project (https://angular.io)
 
-**Please post new [issues](https://github.com/angular/angular/issues) and [pull requests](https://github.com/angular/angular/pulls) to the content folder in [https://github.com/angular/angular/tree/master/aio/content](https://github.com/angular/angular/tree/master/aio/content)**.
+Everything in this folder is part of the documentation project. This includes
 
-<hr>
+* the web site for displaying the documentation
+* the dgeni configuration for converting source files to rendered files that can be viewed in the web site.
+* the tooling for setting up examples for development; and generating plunkers and zip files from the examples.
 
-# Angular.io
-----------
+## Developer tasks
 
-[![Build Status][travis-badge]][travis-badge-url]
+We use `yarn` to manage the dependencies and to run build tasks.
+You should run all these tasks from the `angular/aio` folder.
+Here are the most important tasks you might need to use:
 
-Angular.io is site for Angular **documentation** . 
+* `yarn` - install all the dependencies.
+* `yarn setup` - install all the dependencies, boilerplate, plunkers, zips and run dgeni on the docs.
+* `yarn setup-local` - same as `setup`, but use the locally built Angular packages for aio and docs examples boilerplate.
 
-This site also includes links to other helpful angular resources including 
-AngularJS, Angular Material, and AngularFire.
+* `yarn build` - create a production build of the application (after installing dependencies, boilerplate, etc).
+* `yarn build-local` - same as `build`, but use `setup-local` instead of `setup`.
 
-## Issues
+* `yarn start` - run a development web server that watches the files; then builds the doc-viewer and reloads the page, as necessary.
+* `yarn serve-and-sync` - run both the `docs-watch` and `start` in the same console.
+* `yarn lint` - check that the doc-viewer code follows our style rules.
+* `yarn test` - watch all the source files, for the doc-viewer, and run all the unit tests when any change.
+* `yarn e2e` - run all the e2e tests for the doc-viewer.
 
-Please file **Developer Guide, Cookbook, and code sample issues _only_** in this 
-[Angular.io](https://github.com/angular/angular.io/issues) github repo.
+* `yarn docs` - generate all the docs from the source files.
+* `yarn docs-watch` - watch the Angular source and the docs files and run a short-circuited doc-gen for the docs that changed.
+* `yarn docs-lint` - check that the doc gen code follows our style rules.
+* `yarn docs-test` - run the unit tests for the doc generation code.
 
-**Angular API issues, cheatsheet corrections, feature requests, defect reports, and technical questions** concerning Angular itself
-belong in the [**angular source code**](https://github.com/angular/angular/issues) github repo.
-We can't handle those topics here and will ask you to re-post them on the angular repo.
+* `yarn boilerplate:add` - generate all the boilerplate code for the examples, so that they can be run locally. Add the option `--local` to use your local version of Angular contained in the "dist" folder.
+* `yarn boilerplate:remove` - remove all the boilerplate code that was added via `yarn boilerplate:add`.
+* `yarn generate-plunkers` - generate the plunker files that are used by the `live-example` tags in the docs.
+* `yarn generate-zips` - generate the zip files from the examples. Zip available via the `live-example` tags in the docs.
 
-## How you can help
+* `yarn example-e2e` - run all e2e tests for examples
+  - `yarn example-e2e --setup` - force webdriver update & other setup, then run tests
+  - `yarn example-e2e --filter=foo` - limit e2e tests to those containing the word "foo"
+  - `yarn example-e2e --setup --local` - run e2e tests with the local version of Angular contained in the "dist" folder
 
-Filing issues is helpful but **pull requests** that improve the docs are even better!
+* `yarn build-ie-polyfills` - generates a js file of polyfills that can be loaded in Internet Explorer.
 
-Learn how to [contribute to Angular.io](https://github.com/angular/angular.js/blob/master/CONTRIBUTING.md).
+## Using ServiceWorker locally
 
-## Development Setup
-This site relies heavily on node and npm.
+Since abb36e3cb, running `yarn start --prod` will no longer set up the ServiceWorker, which
+would require manually running `yarn sw-manifest` and `yarn sw-copy` (something that is not possible
+with webpack serving the files from memory).
 
-1. Make sure you are using at least node v.5+ and latest npm; 
-if not install [nvm](https://github.com/creationix/nvm) to get node going on your machine.
+If you want to test ServiceWorker locally, you can use `yarn build` and serve the files in `dist/`
+with `yarn http-server dist -p 4200`.
 
-1. Install global npm packages by running `./scripts/before-install.sh`
+For more details see #16745.
 
-1. Clone
 
-  - this repo
-  - [angular/angular source code repo](https://github.com/angular/angular)
+## Guide to authoring
 
-  to the same parent directory. The **cloned repo directories must be siblings**, with the latter named **angular**.
+There are two types of content in the documentation:
 
-1. cd into root directory `angular.io/`
+* **API docs**: descriptions of the modules, classes, interfaces, decorators, etc that make up the Angular platform.
+API docs are generated directly from the source code.
+The source code is contained in TypeScript files, located in the `angular/packages` folder.
+Each API item may have a preceding comment, which contains JSDoc style tags and content.
+The content is written in markdown.
 
-1. Install local npm packages by running `./scripts/install.sh`
+* **Other content**: guides, tutorials, and other marketing material.
+All other content is written using markdown in text files, located in the `angular/aio/content` folder.
+More specifically, there are sub-folders that contain particular types of content: guides, tutorial and marketing.
 
-1. See [below](#code-sample-development) for code sample development preparation.
+We use the [dgeni](https://github.com/angular/dgeni) tool to convert these files into docs that can be viewed in the doc-viewer.
 
-## Content Development
-All documentation content is written in Jade which has [its own syntax](http://jade-lang.com/reference/).
-Be aware of the strict demands imposed by this significant-whitespace language.
-We strongly recommend running one of the gulp `serve-and-sync` commands [described below](#serve-and-sync)
-while editing content so you can see the effect of your changes *as you type*.
+The [Authors Style Guide](https://angular.io/guide/docs-style-guide) prescribes guidelines for
+writing guide pages, explains how to use the documentation classes and components, and how to markup sample source code to produce code snippets.
 
-The documentation relies on specific styles and mixins. 
-Learn about those in the [documentation styleguide](https://angular.io/docs/ts/latest/styleguide.html).
+### Generating the complete docs
 
-The jade documentation files are language-specific directories under either `public/docs/`.
-For example, all of the TypeScript docs are in `public/docs/ts/latest`, e.g.
-- `public/docs/ts/latest/quickstart.jade`
-- `public/docs/ts/latest/guide/architecture.jade`
-- `public/docs/ts/latest/cookbook/component-communication.jade`
-- `public/docs/ts/latest/tutorial/toh-pt5.jade`
+The main task for generating the docs is `yarn docs`. This will process all the source files (API and other),
+extracting the documentation and generating JSON files that can be consumed by the doc-viewer.
 
-### Local server with watches and browser reload
- 1. cd into root directory `angular.io/`
- 1. run `gulp serve-and-sync`
- 1. browser will launch on localhost:3000 and stay refreshed automatically.
+### Partial doc generation for editors
 
-<a id="serve-and-sync"></a>
-If you are only going to work on a specific part of the docs, such as the dev guide, then you can use one of the more specific gulp tasks to only watch those parts of the file system:
+Full doc generation can take up to one minute. That's too slow for efficient document creation and editing.
 
-* `gulp serve-and-sync` : watch all the local Jade/Sass files, the API source and examples, and the dev guide files
-* `gulp serve-and-sync-api` : watch only the API source and example files
-* `gulp serve-and-sync-devguide` : watch only the dev guide files
-* `gulp build-and-serve` : watch only the local Jade/Sass files
+You can make small changes in a smart editor that displays formatted markdown:
+>In VS Code, _Cmd-K, V_ opens markdown preview in side pane; _Cmd-B_ toggles left sidebar
 
-## Code Sample Development
+You also want to see those changes displayed properly in the doc viewer
+with a quick, edit/view cycle time.
 
-All documentation is supported by sample code and plunkers. 
-Such code resides in the `public/docs/_examples` directory, under page-specific directories, further divided by language track.
+For this purpose, use the `yarn docs-watch` task, which watches for changes to source files and only
+re-processes the the files necessary to generate the docs that are related to the file that has changed.
+Since this task takes shortcuts, it is much faster (often less than 1 second) but it won't produce full
+fidelity content. For example, links to other docs and code examples may not render correctly. This is
+most particularly noticed in links to other docs and in the embedded examples, which may not always render
+correctly.
 
-For example, the TypeScript QuickStart sample is in `public/docs/_examples/quickstart/ts`.
+The general setup is as follows:
 
-All samples are in a consistent directory structure using the same styles and the same npm packages, including the latest release of Angular.
-This consistency is possible in part thanks to gulp-driven tooling. 
-To run the samples locally and confirm that they work properly, 
-take the following extra steps to prepare the environment:
+* Open a terminal, ensure the dependencies are installed; run an initial doc generation; then start the doc-viewer:
 
-1. cd to `public/docs/_examples`
-
-1. install the canonical node packages for all samples by running `npm install`
-
-1. cd back up to `angular.io` root: `cd ../../..`
-
-1. run `gulp add-example-boilerplate` (elevate to admin on Windows) 
-to copy canonical files to the sample directories and create symlinks there for node_modules. 
-
-Now cd into any particular sample's language directory (e.g., `public/docs/_examples/quickstart/ts`) and try:
-- `npm start`  to simultaneously compile-with-watch and serve-in-browser-with-watch
-- `npm run tsc` to compile only
-- `npm run lite` to serve-and-watch in browser
-
-Look at the scripts in `package.json` for other options.
-Also, open any `plunkr.no-link.html` to see the code execute in plunker
-(you may have to run `gulp build-plunkers` first to create/update).
-
-You must check that your example is free of lint errors.
-- `gulp lint`
-
-### Sample end-to-end tests
-
-All samples should be covered to some degree by end-to-end tests:
-- `gulp run-e2e-tests` to run all TypeScript and JavaScript tests
-- `gulp run-e2e-tests --lang=all` to run TypeScript and JavaScript tests
-- `gulp run-e2e-tests --filter=quickstart` to filter the examples to run, by name
-- `gulp run-e2e-tests --fast` to ignore npm install, webdriver update and boilerplate copy
-
-Any combination of options is possible.
-
-### Resetting the project
-This project generates a lot of untracked files, if you wish to reset it to a mint state, you can run:
-
-- `git clean -xdf`
-
-Also, there is a script available for Linux, OSX and Windows Gitbash users that will setup the project using the steps shown in this section:
-
-- `./scripts/install.sh`
-
-### Run with current build instead of release packages
-Can switch the `@angular` packages in `~/public/docs/_examples/node_modules` to the current build packages with
+```bash
+yarn
+yarn docs
+yarn start
 ```
-gulp install-example-angular --build
+
+* Open a second terminal and start watching the docs
+
+```bash
+yarn docs-watch
 ```
-Restore to RELEASE packages with
+
+>Alternatively, try the consolidated `serve-and-sync` command that builds, watches and serves in the same terminal window
+```bash
+yarn serve-and-sync
 ```
-gulp install-example-angular
-```
->These commands will fail if something is locking any of the packages ... as an IDE often does.
->
->The symptom typically is an error trying to `rm -rf node_modules/@angular`.
->
->_Solution_: unlock the hold on the package(s). In VS Code, re-load the window (`cmd-P` then enter `>relow`).
 
+* Open a browser at https://localhost:4200/ and navigate to the document on which you want to work.
+You can automatically open the browser by using `yarn start -o` in the first terminal.
 
-## Technology Used
-- Angular: Current Angular
-- AngularJS: A v.1.x version of Angular 
-- Angular Material: An implementation of Material Design in Angular.js
-- Gulp: node-based tooling
-- Harp: The static web server with built-in preprocessing.
-- Sass: A professional grade CSS extension language
-- Normalize: A modern, HTML5-ready alternative to CSS resets
-- Grids: A highly customizable CSS Grid Framework built with Sass
-- Prettify: A JS module and CSS for syntax highlighting of source code snippets.
-- Icomoon: Custom built icon fonts
+* Make changes to the page's associated doc or example files. Every time a file is saved, the doc will
+be regenerated, the app will rebuild and the page will reload.
 
-
-## License
-Powered by Google ©2010-2017. Code licensed under an [MIT-style License](https://github.com/angular.io/blob/master/LICENSE). Documentation licensed under [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/).
-
-[travis-badge]: https://travis-ci.org/angular/angular.io.svg?branch=master
-[travis-badge-url]: https://travis-ci.org/angular/angular.io
+* If you get a build error complaining about examples or any other odd behavior, be sure to consult
+the [Authors Style Guide](https://angular.io/guide/docs-style-guide).

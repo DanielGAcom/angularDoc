@@ -1,17 +1,20 @@
 'use strict';
 
-const fs = require('fs');
+const path = require('canonical-path');
+
+const examplesPath = path.resolve(__dirname, '../../../examples');
+const packageFolder = path.resolve(__dirname);
 
 class PackageJsonCustomizer {
   constructor() {
-    this.dependenciesPackageJson = JSON.parse(fs.readFileSync('public/docs/_examples/package.json'));
-    this.scriptsPackageJson = JSON.parse(fs.readFileSync('public/docs/_examples/_boilerplate/package.json'));
-    this.basePackageJson = JSON.parse(fs.readFileSync(`${__dirname}/base.json`));
+    this.dependenciesPackageJson = require(path.join(examplesPath, '/shared/package.json'));
+    this.scriptsPackageJson = require(path.join(examplesPath, '/shared/boilerplate/systemjs/package.json'));
+    this.basePackageJson = require(`${packageFolder}/base.json`);
   }
 
   generate(type = 'systemjs') {
-    let packageJson = JSON.parse(fs.readFileSync(`${__dirname}//package.json`));
-    let rules = JSON.parse(fs.readFileSync(`${__dirname}/${type}.json`));
+    let packageJson = require(`${packageFolder}/package.json`);
+    let rules = require(`${packageFolder}/${type}.json`);
 
     this._mergeJSON(rules, this.basePackageJson);
 

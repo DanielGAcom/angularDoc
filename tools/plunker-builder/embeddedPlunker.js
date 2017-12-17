@@ -1,6 +1,6 @@
 var PlunkerBuilder = require('./builder');
 
-function buildPlunkers(basePath, destPath, options) {
+function buildPlunkers(basePath, destPath, options = {}) {
   configureBuilder(options);
   var builder = new PlunkerBuilder(basePath, destPath, options);
   builder.buildPlunkers();
@@ -22,7 +22,7 @@ function extraData(postData, config) {
 
 function addField(postData, name, content) {
   var encoding = 'utf8';
-  if (name.split('.').pop === 'png') {
+  if (name.split('.').pop() === 'png') {
     encoding = 'base64';
   }
   postData[`entries[${name}][content]`] = content;

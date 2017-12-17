@@ -5,20 +5,21 @@ var path = require('canonical-path');
 var Q = require('q');
 var _ = require('lodash');
 var jsdom = require("jsdom");
-var fs = require("fs");
+var fs = require("fs-extra");
 var globby = require('globby');
-var mkdirp = require('mkdirp');
 
 var fileTranslator = require('./translator/fileTranslator');
 var indexHtmlRules = require('./translator/rules/indexHtml');
 var systemjsConfigExtrasRules = require('./translator/rules/systemjsConfigExtras');
-var regionExtractor = require('../doc-shredder/regionExtractor');
+var mainTsRules = require('./translator/rules/mainTs');
+var regionExtractor = require('../transforms/examples-package/services/region-parser');
 
 class PlunkerBuilder {
   constructor(basePath, destPath, options) {
     this.basePath = basePath;
     this.destPath = destPath;
     this.options = options;
+    this.boilerplate = path.join(__dirname, '../examples/shared/boilerplate/systemjs');
     this.copyrights = {};
 
     this._buildCopyrightStrings();
@@ -28,8 +29,7 @@ class PlunkerBuilder {
     this._getPlunkerFiles();
     var errFn = this.options.errFn || function(e) { console.log(e); };
     var plunkerPaths = path.join(this.basePath, '**/*plnkr.json');
-    var fileNames = globby.sync(plunkerPaths,
-      { ignore: ['**/node_modules/**', '**/_boilerplate/**'] });
+    var fileNames = globby.sync(plunkerPaths, { ignore: ['**/node_modules/**'] });
     fileNames.forEach((configFileName) => {
       try {
         this._buildPlunkerFrom(configFileName);
@@ -39,12 +39,9 @@ class PlunkerBuilder {
     });
   }
 
-  _addPlunkerFiles(config, postData) {
-    if (config.basePath.indexOf('/ts') > -1) {
-      // uses systemjs.config.js so add plunker version
-      this.options.addField(postData, 'systemjs.config.js', this.systemjsConfig);
-      this.options.addField(postData, 'systemjs-angular-loader.js', this.systemjsModulePlugin);
-    }
+  _addPlunkerFiles(postData) {
+    this.options.addField(postData, 'systemjs.config.js', this.systemjsConfig);
+    this.options.addField(postData, 'systemjs-angular-loader.js', this.systemjsModulePlugin);
   }
 
   _buildCopyrightStrings() {
@@ -66,7 +63,7 @@ class PlunkerBuilder {
   _buildPlunkerFrom(configFileName) {
     // replace ending 'plnkr.json' with 'plnkr.no-link.html' to create output file name;
     var outputFileName = `${this.options.plunkerFileName}.no-link.html`;
-    outputFileName = configFileName.substr(0, configFileName.length - 'plnkr.json'.length) + outputFileName;
+    outputFileName = configFileName.replace(/plnkr\.json$/, outputFileName);
     var altFileName;
     if (this.destPath && this.destPath.length > 0) {
       var partPath = path.dirname(path.relative(this.basePath, outputFileName));
@@ -75,16 +72,14 @@ class PlunkerBuilder {
     try {
       var config = this._initConfigAndCollectFileNames(configFileName);
       var postData = this._createPostData(config);
-      this._addPlunkerFiles(config, postData);
+      this._addPlunkerFiles(postData);
       var html = this._createPlunkerHtml(config, postData);
       if (this.options.writeNoLink) {
         fs.writeFileSync(outputFileName, html, 'utf-8');
       }
       if (altFileName) {
         var altDirName = path.dirname(altFileName);
-        if (!fs.existsSync(altDirName)) {
-          mkdirp.sync(altDirName);
-        }
+        fs.ensureDirSync(altDirName);
         fs.writeFileSync(altFileName, html, 'utf-8');
       }
     } catch (e) {
@@ -154,11 +149,16 @@ class PlunkerBuilder {
         }
       }
 
+      // Matches main.ts or main.1.ts
+      if (/^main(?:[.-]\w+)?\.ts$/.test(relativeFileName)) {
+        content = fileTranslator.translate(content, mainTsRules);
+      }
+
       if (relativeFileName == 'systemjs.config.extras.js') {
         content = fileTranslator.translate(content, systemjsConfigExtrasRules);
       }
 
-      content = regionExtractor.removeDocTags(content, extn.substr(1));
+      content = regionExtractor()(content, extn.substr(1)).contents;
 
       this.options.addField(postData, relativeFileName, content);
     });
@@ -201,7 +201,7 @@ class PlunkerBuilder {
     // read binary data
     var bitmap = fs.readFileSync(file);
     // convert binary data to base64 encoded string
-    return new Buffer(bitmap).toString('base64');
+    return Buffer(bitmap).toString('base64');
   }
 
   _existsSync(filename) {
@@ -214,13 +214,13 @@ class PlunkerBuilder {
   }
 
   _getPlunkerFiles() {
-    var systemJsModulePlugin = '/_boilerplate/src/systemjs-angular-loader.js';
-    var systemJsConfigPath = '/_boilerplate/src/systemjs.config.web.js';
+    var systemJsModulePlugin = '/src/systemjs-angular-loader.js';
+    var systemJsConfigPath = '/src/systemjs.config.web.js';
     if (this.options.build) {
-      systemJsConfigPath = '/_boilerplate/src/systemjs.config.web.build.js';
+      systemJsConfigPath = '/src/systemjs.config.web.build.js';
     }
-    this.systemjsConfig = fs.readFileSync(this.basePath + systemJsConfigPath, 'utf-8');
-    this.systemjsModulePlugin = fs.readFileSync(this.basePath + systemJsModulePlugin, 'utf-8');
+    this.systemjsConfig = fs.readFileSync(this.boilerplate + systemJsConfigPath, 'utf-8');
+    this.systemjsModulePlugin = fs.readFileSync(this.boilerplate + systemJsModulePlugin, 'utf-8');
 
     // Copyright already added to web versions of systemjs.config
     // this.systemjsConfig +=  this.copyrights.jsCss;
@@ -234,10 +234,10 @@ class PlunkerBuilder {
   _getSystemjsConfigExtras(config) {
     var extras =    config.basePath + '/systemjs.config.extras.js';
     var webExtras = config.basePath + '/systemjs.config.extras.web.js';
-    if (fs.existsSync(webExtras)) {
+    if (this._existsSync(webExtras)) {
       // console.log('** Substituted "' + webExtras + '"  for "' + extras + '".');
       return fs.readFileSync(webExtras, 'utf-8');
-    } else if (fs.existsSync(extras)){
+    } else if (this._existsSync(extras)){
       console.log('** WARNING: no "' + webExtras + '" replacement for "' + extras + '".');
       return fs.readFileSync(extras, 'utf-8');
     } else {
@@ -278,7 +278,7 @@ class PlunkerBuilder {
       if (fileName.substr(0,1) == '!') {
         return "!" + path.join(config.basePath, fileName.substr(1));
       } else {
-        includeSpec = includeSpec || /.*\.spec.(ts|js)$/.test(fileName);
+        includeSpec = includeSpec || /\.spec\.(ts|js)$/.test(fileName);
         return path.join(config.basePath, fileName);
       }
     });
@@ -294,6 +294,10 @@ class PlunkerBuilder {
       '!**/wallaby.js',
       '!**/karma-test-shim.js',
       '!**/karma.conf.js',
+      '!**/test.ts',
+      '!**/polyfills.ts',
+      '!**/tsconfig.app.json',
+      '!**/environments/**',
       // AoT related files
       '!**/aot/**/*.*',
       '!**/*-aot.*'
@@ -301,10 +305,10 @@ class PlunkerBuilder {
 
     // exclude all specs if no spec is mentioned in `files[]`
     if (!includeSpec) {
-      defaultExcludes = defaultExcludes.concat(['!**/*.spec.*','!**/spec.js']);
+      defaultExcludes.push('!**/*.spec.*','!**/spec.js');
     }
 
-    Array.prototype.push.apply(gpaths, defaultExcludes);
+    gpaths.push(...defaultExcludes);
 
     config.fileNames = globby.sync(gpaths, { ignore: ["**/node_modules/**"] });
 
@@ -313,35 +317,3 @@ class PlunkerBuilder {
 }
 
 module.exports = PlunkerBuilder;
-
-// not currently used.
-// function escapeHtml(unsafe) {
-//   return unsafe
-//     .replace(/&/g, "&amp;")
-//     .replace(/</g, "&lt;")
-//     .replace(/>/g, "&gt;")
-//     .replace(/"/g, "&quot;")
-//     .replace(/'/g, "&#039;");
-// }
-
-//// Old version - no longer used
-//function createPlunkerHtmlAsync(basePath, postData) {
-//
-//  useNewWindow = false;
-//  jsdom.env({
-//    html: createBasePlunkerHtml(useNewWindow),
-//    done: function (err, window) {
-//      var doc = window.document;
-//      var form = doc.querySelector('form');
-//
-//      _.forEach(postData, function(value, key) {
-//        var ele = htmlToElement(doc, '<input type="hidden" name="' + key + '">');
-//        ele.setAttribute('value', value);
-//        form.appendChild(ele)
-//      });
-//      var html = doc.documentElement.outerHTML;
-//      var outputFn = path.join(basePath, "plnkr.html");
-//      fs.writeFileSync(outputFn, html, 'utf-8' );
-//    }
-//  });
-//}

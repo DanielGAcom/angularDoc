@@ -1,8 +1,0 @@
-{
-  "projects": {
-    "live": "angular-io",
-    "ngdocsdev": "ngdocsdev",
-    "kw-dev": "kw-angular-io",
-    "dev": "angular-io-dev"
-  }
-}
