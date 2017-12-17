@@ -1,0 +1,61 @@
+{
+  "index": {
+    "title": "Cookbook",
+    "navTitle": "Overview",
+    "intro": "A collection of recipes for common Angular application scenarios"
+  },
+
+  "ajs-quick-reference": {
+    "title": "AngularJS to Angular Quick Reference",
+    "navTitle": "AngularJS to Angular Quick Ref",
+    "intro": "Learn how AngularJS concepts and techniques map to Angular"
+  },
+
+  "ngmodule-faq": {
+    "title": "Angular Module FAQs",
+    "intro": "Answers to frequently asked questions about @NgModule",
+    "hide": true
+  },
+
+  "component-communication": {
+    "title": "Component Interaction",
+    "intro": "Share information between different directives and components"
+  },
+
+  "dependency-injection": {
+    "title": "Dependency Injection",
+    "intro": "Techniques for Dependency Injection"
+  },
+
+  "dynamic-form": {
+    "title": "Dynamic Forms",
+    "intro": "Render dynamic forms with NgFormModel"
+  },
+
+  "form-validation": {
+    "title": "Form Validation",
+    "intro": "Validate user's form entries"
+  },
+
+  "i18n": {
+    "title": "Internationalization (i18n)",
+    "intro": "Translate the app's template text into multiple languages",
+    "hide": true
+  },
+
+  "set-document-title": {
+    "title": "Set the Document Title",
+    "intro": "Setting the document or window title using the Title service."
+  },
+
+  "ts-to-js": {
+    "title": "TypeScript to JavaScript",
+    "intro": "Convert Angular TypeScript examples into ES6 and ES5 JavaScript"
+  },
+
+  "visual-studio-2015": {
+    "title": "Visual Studio 2015 QuickStart",
+    "intro": "Use Visual Studio 2015 with the QuickStart files"
+  }
+
+}

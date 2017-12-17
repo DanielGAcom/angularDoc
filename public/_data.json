@@ -1,0 +1,31 @@
+{
+  "index": {
+    "hero": "home",
+    "title": "One framework.",
+    "subtitle": "Mobile & desktop."
+  },
+
+  "features": {
+    "title": "Features & Benefits"
+  },
+
+  "contribute": {
+    "title": "Contribute to Angular",
+    "subtitle": "Help us build the framework of the future!",
+    "autoformat": "true"
+  },
+
+  "events": {
+    "title": "Events",
+    "subtitle": "Where we'll be presenting"
+  },
+
+  "support": {
+    "title": "Support",
+    "subtitle": "Get help from the Angular Community"
+  },
+
+  "presskit": {
+    "title": "Press Kit"
+  }
+}

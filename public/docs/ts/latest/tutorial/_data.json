@@ -1,0 +1,39 @@
+{
+  "index": {
+    "title": "Tutorial: Tour of Heroes",
+    "navTitle": "Introduction",
+    "intro": "The Tour of Heroes tutorial takes you through the steps of creating an Angular application in TypeScript.",
+    "nextable": true
+  },
+  "toh-pt1": {
+    "title": "The Hero Editor",
+    "intro": "Build a simple hero editor.",
+    "nextable": true
+  },
+  "toh-pt2": {
+    "title": "Master/Detail",
+    "intro": "Build a master/detail page with a list of heroes.",
+    "nextable": true
+  },
+  "toh-pt3": {
+    "title": "Multiple Components",
+    "intro": "Refactor the master/detail view into separate components.",
+    "nextable": true
+  },
+  "toh-pt4": {
+    "title": "Services",
+    "intro": "Create a reusable service to manage the hero data calls.",
+    "nextable": true
+  },
+  "toh-pt5": {
+    "title": "Routing",
+    "intro": "Add the Angular component router and learn to navigate among the views.",
+    "nextable": true
+  },
+  "toh-pt6": {
+    "title": "HTTP",
+    "subtitle": "Getting and saving data",
+    "intro": "Convert the service and components to use Angular's HTTP service.",
+    "nextable": true
+  }
+}
